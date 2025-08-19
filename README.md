@@ -1,7 +1,7 @@
 # Example apps.yaml
 ```
 twitch_thumbs:
-  module: twitch_thumbs
+  module: twitch_thumbnails
   class: TwitchConcat
   entity: sensor.twitch_online_streamers
   attribute: online_detail
