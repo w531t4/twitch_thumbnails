@@ -6,6 +6,7 @@
 import io
 from typing import Tuple, Dict, Any, List
 from pathlib import Path
+from datetime import datetime
 import requests
 from PIL import Image
 import appdaemon.plugins.hass.hassapi as hass
@@ -28,7 +29,8 @@ class TwitchConcat(hass.Hass):
         # run once, then on every change
         self.run_in(self._build, 1)
         self.listen_state(self._on_change, self.entity, attribute=self.attr)
-        self.attr_data = None
+        self.attr_data: List[Dict[str, str]] | None = None
+        self.last_state: List[Dict[str, str]] | None = None
 
     @property
     def entity(self) -> str:
@@ -159,4 +161,13 @@ class TwitchConcat(hass.Hass):
 
         self.log(f"Wrote {out_path} ({strip.size[0]}x{strip.size[1]})")
         assert self.attr_data is not None
-        self.set_state(entity_id=self.publish_entity, attributes={self.attr: self.attr_data})
+        self.set_state(entity_id=self.publish_entity,
+                       state=self.attr_data["online_list"] if self.attr_data is not None and "online_list" in self.attr_data else "unknown",
+                       attributes={self.attr: self.attr_data,
+                                   "updated": datetime.utcnow().isoformat() + "Z"})
+        if self.last_state != self.attr_data:
+            self.last_state = self.attr_data
+            self.fire_event(
+                "twitch_online_streamers_published_changed",
+                state=self.attr_data,
+            )
