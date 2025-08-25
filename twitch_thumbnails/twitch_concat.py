@@ -24,7 +24,7 @@ class TwitchConcat(hass.Hass):
         self.out_file = Path(self.args.get("out_file", "online_strip.bmp"))
         self.format   = "BMP" if str(self.out_file).lower().endswith(".bmp") else "PNG"
         self.max_entries = self.args.get("max_entries", 10)
-        self.publish_entity = self.args.get("entity", "sensor.twitch_online_streamers_published")
+        self.publish_entity = self.args.get("publish_entity", "sensor.twitch_online_streamers_published")
         self.out_dir.mkdir(exist_ok=True)
         # run once, then on every change
         self.run_in(self._build, 1)
@@ -161,7 +161,7 @@ class TwitchConcat(hass.Hass):
 
         self.log(f"Wrote {out_path} ({strip.size[0]}x{strip.size[1]})")
         assert self.attr_data is not None
-        self.set_state(entity_id=self.publish_entity,
+        self.set_state(self.publish_entity,
                        state="healthy" if self.attr_data is not None else "unknown",
                        attributes={self.attr: self.attr_data,
                                    "updated": datetime.utcnow().isoformat() + "Z"})
