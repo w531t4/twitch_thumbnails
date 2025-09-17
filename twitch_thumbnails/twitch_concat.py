@@ -161,6 +161,9 @@ class TwitchConcat(hass.Hass):
 
         self.log(f"Wrote {out_path} ({strip.size[0]}x{strip.size[1]})")
         assert self.attr_data is not None
+        self.set_state(f"{self.publish_entity}_brief",
+                       state=datetime.utcnow().isoformat() + "Z",
+                       )
         self.set_state(self.publish_entity,
                        state="healthy" if self.attr_data is not None else "unknown",
                        attributes={self.attr: self.attr_data,
