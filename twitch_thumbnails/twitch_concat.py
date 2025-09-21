@@ -121,7 +121,7 @@ class TwitchConcat(hass.Hass):
         self.attr_data = data
         self.log(f"observed state_data={data}", level="DEBUG")
         icons: List[Image.Image] = []
-
+        streamers: List[str] = []
         if data:
             try:
                 items = data
@@ -133,6 +133,7 @@ class TwitchConcat(hass.Hass):
                         continue
                     thumb = self._fetch_and_fit(url)
                     if thumb:
+                        streamers.append(obj.get("name", "None").lower())
                         icons.append(thumb)
             except Exception as e:
                 self.log(f"JSON error: {e}", level="WARNING")
@@ -163,6 +164,12 @@ class TwitchConcat(hass.Hass):
         assert self.attr_data is not None
         self.set_state(f"{self.publish_entity}_brief",
                        state=datetime.utcnow().isoformat() + "Z",
+                       )
+        self.set_state(f"{self.publish_entity}_streamers",
+                       state="online",
+                       attributes={"count": len(streamers),
+                                   "members": streamers,
+                                   "updated": datetime.utcnow().isoformat() + "Z"},
                        )
         self.set_state(self.publish_entity,
                        state="healthy" if self.attr_data is not None else "unknown",
